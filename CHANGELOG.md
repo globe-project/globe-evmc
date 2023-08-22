@@ -5,6 +5,106 @@ Documentation of all notable changes to the **EVMC** project.
 The format is based on [Keep a Changelog],
 and this project adheres to [Semantic Versioning].
 
+## [10.1.0] — 2023-04-22
+
+### Added
+
+- The Prague EVM revision (anticipated after Cancun)
+  [#683](https://github.com/ethereum/evmc/pull/683)
+- C++: Make `evmc::Result` accessible via `evmc_result` reference
+  [#686](https://github.com/ethereum/evmc/pull/686)
+
+### Changed
+
+- Set Shanghai as the latest stable revision `EVMC_LATEST_STABLE_REVISION`.
+  [#687](https://github.com/ethereum/evmc/pull/687)
+- Bump minimum supported compiler versions:
+  [#685](https://github.com/ethereum/evmc/pull/685)
+  - GCC: 7 → 8
+  - Clang: 5 → 9
+  - CMake: 3.10 → 3.16
+
+
+## [10.0.0] — 2022-08-25
+
+### Added
+
+- Information about `PUSH0` instruction from [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855)
+  for Shanghai revision.
+  [#628](https://github.com/ethereum/evmc/pull/628)
+- The [Paris](https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/paris.md)
+  (aka The Merge) EVM revision.
+  [#627](https://github.com/ethereum/evmc/pull/627)
+  [#634](https://github.com/ethereum/evmc/pull/634)
+- The Cancun EVM revision (anticipated after Shanghai)
+  [#633](https://github.com/ethereum/evmc/pull/633)
+- The gas refund counter has been added to the `evmc_result`.
+  [#666](https://github.com/ethereum/evmc/pull/666)
+- The error code `EVMC_LOADER_UNSPECIFIED_ERROR` has been defined to provide
+  a convenient way of initializing `evmc_loader_error_code` objects.
+  [#617](https://github.com/ethereum/evmc/pull/617)
+- Support for Visual Studio 2022.
+  [#619](https://github.com/ethereum/evmc/pull/619)
+- C++ types `evmc::address` and `evmc::bytes32` are convertible to `std::basic_string_view<uint8_t>`.
+  [#636](https://github.com/ethereum/evmc/pull/636)
+- Convenient constructors for C++ `evmc::result`.
+  [#660](https://github.com/ethereum/evmc/pull/660)
+- Rust: The `EvmcVm::set_option` has been added.
+  [#614](https://github.com/ethereum/evmc/pull/614)
+
+### Changed
+
+- The `code_address` field has been added to the `evmc_message` type.
+  It represents the address of an account from which the code is being executed
+  and is useful for `DELEGATECALL` implementations.
+  [#611](https://github.com/ethereum/evmc/pull/611)
+  [#615](https://github.com/ethereum/evmc/pull/615)
+- The `evmc_message::destination` field has been renamed to `evmc_message::recipient`
+  to clarify its purpose and match the naming from the Yellow Paper.
+  [#616](https://github.com/ethereum/evmc/pull/616)
+- The `evmc_storage_status` has been extended to provide information about every possible case of
+  storage net gas metering ([EIP-2200](https://eips.ethereum.org/EIPS/eip-2200)).
+  [#661](https://github.com/ethereum/evmc/pull/661)
+- The `selfdestruct` method returns the information if the given address
+  has not been registered as selfdestructed yet.
+  [#662](https://github.com/ethereum/evmc/pull/662)
+- C++: The `evmc::result` has been renamed to `evmc::Result` for consistency
+  with C++ types of similar kind.
+  [#665](https://github.com/ethereum/evmc/pull/665)
+- C++: The `HostContext` does not cache transaction context (`evmc_tx_context`) anymore.
+  [#631](https://github.com/ethereum/evmc/pull/631)
+- Go: The `create2Salt` parameter has been removed from the `VM.Execute()`.
+  [#612](https://github.com/ethereum/evmc/pull/612)
+- Code quality improvements.
+  [#618](https://github.com/ethereum/evmc/pull/618)
+  [#620](https://github.com/ethereum/evmc/pull/620)
+  [#621](https://github.com/ethereum/evmc/pull/621)
+  [#632](https://github.com/ethereum/evmc/pull/632)
+- According to [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399),
+  `block_difficulty` field was renamed to `block_prev_randao`, and `DIFFICULTY` opcode to `PREVRANDAO`.
+  [#635](https://github.com/ethereum/evmc/pull/635)
+- The `evmc::hex` support C++ library has been refactored and converted to a single-header library.
+  [#643](https://github.com/ethereum/evmc/pull/643)
+  [#648](https://github.com/ethereum/evmc/pull/648)
+  [#649](https://github.com/ethereum/evmc/pull/649)
+  [#654](https://github.com/ethereum/evmc/pull/654)
+- For command-line tools to load input/code from a file the `@file` syntax must be used.
+  E.g. `evmc run @contract.evm --input @data.in`.
+  [#647](https://github.com/ethereum/evmc/pull/647)
+- Improvements to the `evmc::MockedHost` testing utility around account storage and selfdestructs.
+  [#661](https://github.com/ethereum/evmc/pull/661)
+  [#662](https://github.com/ethereum/evmc/pull/662)
+  [#670](https://github.com/ethereum/evmc/pull/670)
+
+### Fixed
+
+- Java bindings fixes.
+  [#653](https://github.com/ethereum/evmc/pull/653)
+
+### Removed
+
+- The support for C++ `0_address` and `0_bytes32` literals has been removed.
+  [#652](https://github.com/ethereum/evmc/pull/652)
 
 ## [9.0.0] — 2021-06-30
 
@@ -583,6 +683,8 @@ removed.
   [#52](https://github.com/ethereum/evmc/pull/52)
 
 
+[10.1.0]: https://github.com/ethereum/evmc/releases/tag/v10.1.0
+[10.0.0]: https://github.com/ethereum/evmc/releases/tag/v10.0.0
 [9.0.0]: https://github.com/ethereum/evmc/releases/tag/v9.0.0
 [8.0.0]: https://github.com/ethereum/evmc/releases/tag/v8.0.0
 [7.5.0]: https://github.com/ethereum/evmc/releases/tag/v7.5.0

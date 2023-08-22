@@ -1,5 +1,5 @@
 // EVMC: Ethereum Client-VM Connector API.
-// Copyright 2018-2019 The EVMC Authors.
+// Copyright 2018 The EVMC Authors.
 // Licensed under the Apache License, Version 2.0.
 
 #include <evmc/instructions.h>
@@ -352,16 +352,45 @@ TEST(instructions, london_hard_fork)
     EXPECT_TRUE(bn[OP_BASEFEE] == nullptr);
 }
 
-TEST(instructions, shanghai_hard_fork)
+TEST(instructions, paris_hard_fork)
 {
-    const auto s = evmc_get_instruction_metrics_table(EVMC_SHANGHAI);
+    const auto p = evmc_get_instruction_metrics_table(EVMC_PARIS);
     const auto l = evmc_get_instruction_metrics_table(EVMC_LONDON);
-    const auto sn = evmc_get_instruction_names_table(EVMC_SHANGHAI);
+    const auto pn = evmc_get_instruction_names_table(EVMC_PARIS);
     const auto ln = evmc_get_instruction_names_table(EVMC_LONDON);
 
     for (int op = 0x00; op <= 0xff; ++op)
     {
-        EXPECT_EQ(s[op], l[op]) << op;
-        EXPECT_STREQ(sn[op], ln[op]) << op;
+        EXPECT_EQ(p[op], l[op]) << op;
+        if (op == OP_PREVRANDAO)
+            continue;
+        EXPECT_STREQ(pn[op], ln[op]) << op;
     }
+
+    EXPECT_EQ(pn[OP_PREVRANDAO], std::string{"PREVRANDAO"});
+    EXPECT_EQ(ln[OP_PREVRANDAO], std::string{"DIFFICULTY"});
+}
+
+TEST(instructions, shanghai_hard_fork)
+{
+    const auto s = evmc_get_instruction_metrics_table(EVMC_SHANGHAI);
+    const auto p = evmc_get_instruction_metrics_table(EVMC_PARIS);
+    const auto sn = evmc_get_instruction_names_table(EVMC_SHANGHAI);
+    const auto pn = evmc_get_instruction_names_table(EVMC_PARIS);
+
+    for (int op = 0x00; op <= 0xff; ++op)
+    {
+        if (op == OP_PUSH0)
+            continue;
+        EXPECT_EQ(s[op], p[op]) << op;
+        EXPECT_STREQ(sn[op], pn[op]) << op;
+    }
+
+    // EIP-3855: PUSH0 instruction
+    EXPECT_EQ(s[OP_PUSH0].gas_cost, 2);
+    EXPECT_EQ(s[OP_PUSH0].stack_height_required, 0);
+    EXPECT_EQ(s[OP_PUSH0].stack_height_change, 1);
+    EXPECT_EQ(p[OP_PUSH0].gas_cost, 0);
+    EXPECT_EQ(sn[OP_PUSH0], std::string{"PUSH0"});
+    EXPECT_TRUE(pn[OP_PUSH0] == nullptr);
 }

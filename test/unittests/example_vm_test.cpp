@@ -17,9 +17,9 @@ struct Output
 {
     evmc::bytes bytes;
 
-    explicit Output(const char* output_hex) noexcept : bytes{evmc::from_hex(output_hex)} {}
+    explicit Output(const char* output_hex) noexcept : bytes{evmc::from_hex(output_hex).value()} {}
 
-    friend bool operator==(const evmc::result& result, const Output& expected) noexcept
+    friend bool operator==(const evmc::Result& result, const Output& expected) noexcept
     {
         return expected.bytes.compare(0, evmc::bytes::npos, result.output_data,
                                       result.output_size) == 0;
@@ -38,15 +38,15 @@ protected:
     example_vm() noexcept
     {
         msg.sender = 0x5000000000000000000000000000000000000005_address;
-        msg.destination = 0xd00000000000000000000000000000000000000d_address;
+        msg.recipient = 0xd00000000000000000000000000000000000000d_address;
     }
 
-    evmc::result execute_in_example_vm(int64_t gas,
+    evmc::Result execute_in_example_vm(int64_t gas,
                                        const char* code_hex,
-                                       const char* input_hex = "") noexcept
+                                       const char* input_hex = "")
     {
-        const auto code = evmc::from_hex(code_hex);
-        const auto input = evmc::from_hex(input_hex);
+        const auto code = evmc::from_hex(code_hex).value();
+        const auto input = evmc::from_hex(input_hex).value();
 
         msg.gas = gas;
         msg.input_data = input.data();
@@ -90,7 +90,7 @@ TEST_F(example_vm, return_address)
 TEST_F(example_vm, counter_in_storage)
 {
     // Yul: sstore(0, add(sload(0), 1)) stop()
-    auto& storage_value = host.accounts[msg.destination].storage[{}].value;
+    auto& storage_value = host.accounts[msg.recipient].storage[{}].current;
     storage_value = 0x00000000000000000000000000000000000000000000000000000000000000bb_bytes32;
     const auto r = execute_in_example_vm(10, "60016000540160005500");
     EXPECT_EQ(r.status_code, EVMC_SUCCESS);
@@ -150,7 +150,7 @@ TEST_F(example_vm, revert_undefined)
 TEST_F(example_vm, call)
 {
     // pseudo-Yul: call(3, 3, 3, 3, 3, 3, 3) return(0, msize())
-    const auto expected_output = evmc::from_hex("aabbcc");
+    const auto expected_output = evmc::from_hex("aabbcc").value();
     host.call_result.output_data = expected_output.data();
     host.call_result.output_size = expected_output.size();
     const auto r = execute_in_example_vm(100, "6003808080808080f1596000f3");
@@ -162,8 +162,7 @@ TEST_F(example_vm, call)
     EXPECT_EQ(host.recorded_calls[0].gas, 3);
     EXPECT_EQ(host.recorded_calls[0].value,
               0x0000000000000000000000000000000000000000000000000000000000000003_bytes32);
-    EXPECT_EQ(host.recorded_calls[0].destination,
-              0x0000000000000000000000000000000000000003_address);
+    EXPECT_EQ(host.recorded_calls[0].recipient, 0x0000000000000000000000000000000000000003_address);
     EXPECT_EQ(host.recorded_calls[0].input_size, size_t{3});
 }
 

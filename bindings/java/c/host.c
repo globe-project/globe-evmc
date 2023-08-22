@@ -1,7 +1,6 @@
-/* EVMC: Ethereum Client-VM Connector API.
- * Copyright 2019-2020 The EVMC Authors.
- * Licensed under the Apache License, Version 2.0.
- */
+// EVMC: Ethereum Client-VM Connector API.
+// Copyright 2019 The EVMC Authors.
+// Licensed under the Apache License, Version 2.0.
 
 #include <assert.h>
 #include <stdlib.h>
@@ -43,7 +42,7 @@ static void CopyFromByteBuffer(JNIEnv* jenv, jobject src, void* dst, size_t size
     {
         jclass exception_class = (*jenv)->FindClass(jenv, "java/lang/IllegalArgumentException");
         assert(exception_class != NULL);
-        (*jenv)->ThrowNew(jenv, exception_class, "Unexpected length.");
+        (*jenv)->ThrowNew(jenv, exception_class, "Unexpected ByteBuffer length.");
     }
     memcpy(dst, ptr, size);
 }
@@ -71,7 +70,7 @@ static bool account_exists_fn(struct evmc_host_context* context, const evmc_addr
     // call java method
     jboolean jresult =
         (*jenv)->CallStaticBooleanMethod(jenv, host_class, method, (jobject)context, jaddress);
-    return jresult != 0;
+    return jresult != JNI_FALSE;
 }
 
 static evmc_bytes32 get_storage_fn(struct evmc_host_context* context,
@@ -282,12 +281,12 @@ static size_t copy_code_fn(struct evmc_host_context* context,
     return length;
 }
 
-static void selfdestruct_fn(struct evmc_host_context* context,
+static bool selfdestruct_fn(struct evmc_host_context* context,
                             const evmc_address* address,
                             const evmc_address* beneficiary)
 {
     const char java_method_name[] = "selfdestruct";
-    const char java_method_signature[] = "(Lorg/ethereum/evmc/HostContext;[B[B)V";
+    const char java_method_signature[] = "(Lorg/ethereum/evmc/HostContext;[B[B)Z";
 
     assert(context != NULL);
     JNIEnv* jenv = attach();
@@ -306,8 +305,9 @@ static void selfdestruct_fn(struct evmc_host_context* context,
     jbyteArray jbeneficiary = CopyDataToJava(jenv, beneficiary, sizeof(struct evmc_address));
 
     // call java method
-    (*jenv)->CallStaticIntMethod(jenv, host_class, method, (jobject)context, jaddress,
-                                 jbeneficiary);
+    jboolean jresult = (*jenv)->CallStaticBooleanMethod(jenv, host_class, method, (jobject)context,
+                                                        jaddress, jbeneficiary);
+    return jresult != JNI_FALSE;
 }
 
 static struct evmc_result call_fn(struct evmc_host_context* context, const struct evmc_message* msg)
@@ -370,7 +370,7 @@ static struct evmc_tx_context get_tx_context_fn(struct evmc_host_context* contex
 
 static evmc_bytes32 get_block_hash_fn(struct evmc_host_context* context, int64_t number)
 {
-    char java_method_name[] = "get_code_hash";
+    char java_method_name[] = "get_block_hash";
     char java_method_signature[] = "(Lorg/ethereum/evmc/HostContext;J)Ljava/nio/ByteBuffer;";
 
     assert(context != NULL);

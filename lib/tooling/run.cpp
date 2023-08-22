@@ -24,7 +24,7 @@ auto bench(MockedHost& host,
            evmc_revision rev,
            const evmc_message& msg,
            bytes_view code,
-           const evmc::result& expected_result,
+           const evmc::Result& expected_result,
            std::ostream& out)
 {
     {
@@ -59,20 +59,17 @@ auto bench(MockedHost& host,
 }
 }  // namespace
 
-int run(evmc::VM& vm,
+int run(VM& vm,
         evmc_revision rev,
         int64_t gas,
-        const std::string& code_hex,
-        const std::string& input_hex,
+        bytes_view code,
+        bytes_view input,
         bool create,
         bool bench,
         std::ostream& out)
 {
     out << (create ? "Creating and executing on " : "Executing on ") << rev << " with " << gas
         << " gas limit\n";
-
-    const auto code = from_hex(code_hex);
-    const auto input = from_hex(input_hex);
 
     MockedHost host;
 
@@ -86,7 +83,7 @@ int run(evmc::VM& vm,
     {
         evmc_message create_msg{};
         create_msg.kind = EVMC_CREATE;
-        create_msg.destination = create_address;
+        create_msg.recipient = create_address;
         create_msg.gas = create_gas;
 
         const auto create_result = vm.execute(host, rev, create_msg, code.data(), code.size());
@@ -99,7 +96,7 @@ int run(evmc::VM& vm,
         auto& created_account = host.accounts[create_address];
         created_account.code = bytes(create_result.output_data, create_result.output_size);
 
-        msg.destination = create_address;
+        msg.recipient = create_address;
         exec_code = created_account.code;
     }
     out << "\n";

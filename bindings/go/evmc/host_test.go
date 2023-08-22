@@ -1,5 +1,5 @@
 // EVMC: Ethereum Client-VM Connector API.
-// Copyright 2018-2020 The EVMC Authors.
+// Copyright 2018 The EVMC Authors.
 // Licensed under the Apache License, Version 2.0.
 
 package evmc
@@ -20,7 +20,7 @@ func (host *testHostContext) GetStorage(addr Address, key Hash) Hash {
 }
 
 func (host *testHostContext) SetStorage(addr Address, key Hash, value Hash) (status StorageStatus) {
-	return StorageUnchanged
+	return StorageAssigned
 }
 
 func (host *testHostContext) GetBalance(addr Address) Hash {
@@ -39,7 +39,8 @@ func (host *testHostContext) GetCode(addr Address) []byte {
 	return nil
 }
 
-func (host *testHostContext) Selfdestruct(addr Address, beneficiary Address) {
+func (host *testHostContext) Selfdestruct(addr Address, beneficiary Address) bool {
+	return false
 }
 
 func (host *testHostContext) GetTxContext() TxContext {
@@ -56,10 +57,11 @@ func (host *testHostContext) EmitLog(addr Address, topics []Hash, data []byte) {
 }
 
 func (host *testHostContext) Call(kind CallKind,
-	destination Address, sender Address, value Hash, input []byte, gas int64, depth int,
-	static bool, salt Hash) (output []byte, gasLeft int64, createAddr Address, err error) {
+	recipient Address, sender Address, value Hash, input []byte, gas int64, depth int,
+	static bool, salt Hash, codeAddress Address) (output []byte, gasLeft int64, gasRefund int64,
+	createAddr Address, err error) {
 	output = []byte("output from testHostContext.Call()")
-	return output, gas, Address{}, nil
+	return output, gas, 0, Address{}, nil
 }
 
 func (host *testHostContext) AccessAccount(addr Address) AccessStatus {
@@ -80,7 +82,7 @@ func TestGetBlockNumberFromTxContext(t *testing.T) {
 	host := &testHostContext{}
 	addr := Address{}
 	h := Hash{}
-	output, gasLeft, err := vm.Execute(host, Byzantium, Call, false, 1, 100, addr, addr, nil, h, code, h)
+	output, gasLeft, err := vm.Execute(host, Byzantium, Call, false, 1, 100, addr, addr, nil, h, code)
 
 	if len(output) != 32 {
 		t.Errorf("unexpected output size: %d", len(output))
@@ -109,7 +111,7 @@ func TestCall(t *testing.T) {
 	host := &testHostContext{}
 	addr := Address{}
 	h := Hash{}
-	output, gasLeft, err := vm.Execute(host, Byzantium, Call, false, 1, 100, addr, addr, nil, h, code, h)
+	output, gasLeft, err := vm.Execute(host, Byzantium, Call, false, 1, 100, addr, addr, nil, h, code)
 
 	if len(output) != 34 {
 		t.Errorf("execution unexpected output length: %d", len(output))

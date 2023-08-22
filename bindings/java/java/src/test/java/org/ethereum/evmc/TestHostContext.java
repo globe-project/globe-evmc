@@ -52,11 +52,13 @@ class TestHostContext implements HostContext {
   }
 
   @Override
-  public void selfdestruct(byte[] address, byte[] beneficiary) {}
+  public boolean selfdestruct(byte[] address, byte[] beneficiary) {
+    return false;
+  }
 
   @Override
   public ByteBuffer call(ByteBuffer msg) {
-    return ByteBuffer.allocateDirect(64).put(new byte[64]);
+    return ByteBuffer.allocateDirect(72).put(new byte[72]);
   }
 
   @Override

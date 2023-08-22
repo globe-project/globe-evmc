@@ -1,7 +1,6 @@
-/* EVMC: Ethereum Client-VM Connector API.
- * Copyright 2018-2019 The EVMC Authors.
- * Licensed under the Apache License, Version 2.0.
- */
+// EVMC: Ethereum Client-VM Connector API.
+// Copyright 2018 The EVMC Authors.
+// Licensed under the Apache License, Version 2.0.
 
 #include "_cgo_export.h"
 
@@ -84,8 +83,8 @@ static inline void go_exported_functions_type_checks()
     size = copyCode(context, address, size, data, size);
 
     evmc_selfdestruct_fn selfdestruct_fn = NULL;
-    selfdestruct_fn(context, address, address);
-    selfdestruct(context, address, address);
+    bool_flag = selfdestruct_fn(context, address, address);
+    bool_flag = selfdestruct(context, address, address);
 
     evmc_call_fn call_fn = NULL;
     result = call_fn(context, message);

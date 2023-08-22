@@ -1,7 +1,6 @@
-/* EVMC: Ethereum Client-VM Connector API.
- * Copyright 2016-2019 The EVMC Authors.
- * Licensed under the Apache License, Version 2.0.
- */
+// EVMC: Ethereum Client-VM Connector API.
+// Copyright 2016 The EVMC Authors.
+// Licensed under the Apache License, Version 2.0.
 
 /// @file
 /// Example implementation of an EVMC Host.
@@ -30,11 +29,8 @@ struct account
     {
         // Extremely dumb "hash" function.
         evmc::bytes32 ret{};
-        for (std::vector<uint8_t>::size_type i = 0; i != code.size(); i++)
-        {
-            auto v = code[i];
+        for (const auto v : code)
             ret.bytes[v % sizeof(ret.bytes)] ^= v;
-        }
         return ret;
     }
 };
@@ -81,7 +77,7 @@ public:
         auto prev_value = account.storage[key];
         account.storage[key] = value;
 
-        return (prev_value == value) ? EVMC_STORAGE_UNCHANGED : EVMC_STORAGE_MODIFIED;
+        return (prev_value == value) ? EVMC_STORAGE_ASSIGNED : EVMC_STORAGE_MODIFIED;
     }
 
     evmc::uint256be get_balance(const evmc::address& addr) const noexcept final
@@ -129,26 +125,28 @@ public:
         return n;
     }
 
-    void selfdestruct(const evmc::address& addr, const evmc::address& beneficiary) noexcept final
+    bool selfdestruct(const evmc::address& addr, const evmc::address& beneficiary) noexcept final
     {
         (void)addr;
         (void)beneficiary;
+        return false;
     }
 
-    evmc::result call(const evmc_message& msg) noexcept final
+    evmc::Result call(const evmc_message& msg) noexcept final
     {
-        return {EVMC_REVERT, msg.gas, msg.input_data, msg.input_size};
+        return evmc::Result{EVMC_REVERT, msg.gas, 0, msg.input_data, msg.input_size};
     }
 
     evmc_tx_context get_tx_context() const noexcept final { return tx_context; }
 
+    // NOLINTNEXTLINE(bugprone-exception-escape)
     evmc::bytes32 get_block_hash(int64_t number) const noexcept final
     {
         const int64_t current_block_number = get_tx_context().block_number;
 
         return (number < current_block_number && number >= current_block_number - 256) ?
                    0xb10c8a5fb10c8a5fb10c8a5fb10c8a5fb10c8a5fb10c8a5fb10c8a5fb10c8a5f_bytes32 :
-                   0_bytes32;
+                   0x0000000000000000000000000000000000000000000000000000000000000000_bytes32;
     }
 
     void emit_log(const evmc::address& addr,

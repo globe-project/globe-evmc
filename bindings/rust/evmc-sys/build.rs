@@ -1,7 +1,6 @@
-/* EVMC: Ethereum Client-VM Connector API.
- * Copyright 2019 The EVMC Authors.
- * Licensed under the Apache License, Version 2.0.
- */
+// EVMC: Ethereum Client-VM Connector API.
+// Copyright 2019 The EVMC Authors.
+// Licensed under the Apache License, Version 2.0.
 
 extern crate bindgen;
 
@@ -20,10 +19,10 @@ fn gen_bindings() {
         .derive_hash(true)
         // force deriving the PratialEq trait on basic types (address, bytes32)
         .derive_partialeq(true)
-        .opaque_type("evmc_host_context")
-        .whitelist_type("evmc_.*")
-        .whitelist_function("evmc_.*")
-        .whitelist_var("EVMC_ABI_VERSION")
+        .blocklist_type("evmc_host_context")
+        .allowlist_type("evmc_.*")
+        .allowlist_function("evmc_.*")
+        .allowlist_var("EVMC_ABI_VERSION")
         // TODO: consider removing this
         .size_t_is_usize(true)
         .generate()

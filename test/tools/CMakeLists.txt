@@ -36,7 +36,7 @@ add_evmc_tool_test(
 add_evmc_tool_test(
     default_revision
     "--vm $<TARGET_FILE:evmc::example-vm> run 00"
-    "Executing on London"
+    "Executing on Shanghai"
 )
 
 add_evmc_tool_test(
@@ -54,31 +54,31 @@ set_tests_properties(${PROJECT_NAME}/evmc-tool/explicit_empty_input PROPERTIES P
 add_evmc_tool_test(
     invalid_hex_code
     "--vm $<TARGET_FILE:evmc::example-vm> run 0x600"
-    "code: \\(incomplete hex byte pair\\) OR \\(File does not exist: 0x600\\)"
+    "code: invalid hex"
 )
 
 add_evmc_tool_test(
     invalid_hex_input
     "--vm $<TARGET_FILE:evmc::example-vm> run 0x --input aa0y"
-    "--input: \\(invalid hex digit\\) OR \\(File does not exist: aa0y\\)"
+    "--input: invalid hex"
 )
 
 add_evmc_tool_test(
     code_from_file
-    "--vm $<TARGET_FILE:evmc::example-vm> run ${CMAKE_CURRENT_SOURCE_DIR}/code.hex --input 0xaabbccdd"
+    "--vm $<TARGET_FILE:evmc::example-vm> run @${CMAKE_CURRENT_SOURCE_DIR}/code.hex --input 0xaabbccdd"
     "Result: +success[\r\n]+Gas used: +7[\r\n]+Output: +aabbccdd00000000000000000000000000000000000000000000000000000000[\r\n]"
 )
 
 add_evmc_tool_test(
     input_from_file
-    "--vm $<TARGET_FILE:evmc::example-vm> run 600035600052596000f3 --input ${CMAKE_CURRENT_SOURCE_DIR}/input.hex"
+    "--vm $<TARGET_FILE:evmc::example-vm> run 600035600052596000f3 --input @${CMAKE_CURRENT_SOURCE_DIR}/input.hex"
     "Result: +success[\r\n]+Gas used: +7[\r\n]+Output: +aabbccdd00000000000000000000000000000000000000000000000000000000[\r\n]"
 )
 
 add_evmc_tool_test(
     invalid_code_file
-    "--vm $<TARGET_FILE:evmc::example-vm> run ${CMAKE_CURRENT_SOURCE_DIR}/invalid_code.evm"
-    "Error: invalid hex digit"
+    "--vm $<TARGET_FILE:evmc::example-vm> run @${CMAKE_CURRENT_SOURCE_DIR}/invalid_code.evm"
+    "Error: invalid hex in ${CMAKE_CURRENT_SOURCE_DIR}/invalid_code.evm"
 )
 
 add_evmc_tool_test(
@@ -88,4 +88,4 @@ add_evmc_tool_test(
 )
 
 get_property(TOOLS_TESTS DIRECTORY PROPERTY TESTS)
-set_tests_properties(${TOOLS_TESTS} PROPERTIES ENVIRONMENT LLVM_PROFILE_FILE=${CMAKE_BINARY_DIR}/tools-%p.profraw)
+set_tests_properties(${TOOLS_TESTS} PROPERTIES ENVIRONMENT LLVM_PROFILE_FILE=${CMAKE_BINARY_DIR}/tools-%m-%p.profraw)

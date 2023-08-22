@@ -1,11 +1,10 @@
-/* EVMC: Ethereum Client-VM Connector API.
- * Copyright 2019 The EVMC Authors.
- * Licensed under the Apache License, Version 2.0.
- */
+// EVMC: Ethereum Client-VM Connector API.
+// Copyright 2019 The EVMC Authors.
+// Licensed under the Apache License, Version 2.0.
 
 use crate::EvmcVm;
 
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 
 /// Container struct for EVMC instances and user-defined data.
 pub struct EvmcContainer<T>
@@ -58,6 +57,15 @@ where
     }
 }
 
+impl<T> DerefMut for EvmcContainer<T>
+where
+    T: EvmcVm,
+{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.vm
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -91,7 +99,7 @@ mod tests {
             block_number: 0,
             block_timestamp: 0,
             block_gas_limit: 0,
-            block_difficulty: Uint256::default(),
+            block_prev_randao: Uint256::default(),
             chain_id: Uint256::default(),
             block_base_fee: Uint256::default(),
         }
@@ -116,12 +124,13 @@ mod tests {
             flags: 0,
             depth: 0,
             gas: 0,
-            destination: ::evmc_sys::evmc_address::default(),
+            recipient: ::evmc_sys::evmc_address::default(),
             sender: ::evmc_sys::evmc_address::default(),
             input_data: std::ptr::null(),
             input_size: 0,
             value: ::evmc_sys::evmc_uint256be::default(),
             create2_salt: ::evmc_sys::evmc_bytes32::default(),
+            code_address: ::evmc_sys::evmc_address::default(),
         };
         let message: ExecutionMessage = (&message).into();
 

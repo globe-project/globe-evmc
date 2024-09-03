@@ -2,11 +2,7 @@
 # Copyright 2016 The EVMC Authors.
 # Licensed under the Apache License, Version 2.0.
 
-cmake_minimum_required(VERSION 3.16...3.24)
-
-if(POLICY CMP0074)
-    cmake_policy(SET CMP0074 NEW)
-endif()
+cmake_minimum_required(VERSION 3.16...3.27)
 
 if(TARGET evmc)
     # The evmc library has been already created (probably by other submodule).
@@ -19,8 +15,6 @@ include(CableCompilerSettings)
 include(CablePackage)
 include(CMakeDependentOption)
 include(CMakePackageConfigHelpers)
-
-option(EVMC_JAVA "Enable building Java Native Interface (JNI) bindings" OFF)
 
 option(EVMC_INSTALL "Enable EVMC installation (e.g. make install)" ON)
 
@@ -44,7 +38,7 @@ endif()
 cable_set_build_type(DEFAULT Release CONFIGURATION_TYPES Debug Release)
 
 project(evmc)
-set(PROJECT_VERSION 10.1.0)
+set(PROJECT_VERSION 12.0.0)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -81,10 +75,6 @@ endif()
 set(EVMC_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 
 add_subdirectory(lib)
-
-if(EVMC_JAVA)
-    add_subdirectory(bindings/java)
-endif()
 
 if(EVMC_TOOLS)
     add_subdirectory(tools)

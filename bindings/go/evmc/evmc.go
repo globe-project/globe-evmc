@@ -44,6 +44,8 @@ static struct evmc_result execute_wrapper(struct evmc_vm* vm,
 		*value,
 		{{0}}, // create2_salt: not required for execution
 		{{0}}, // code_address: not required for execution
+		0,     // code
+		0,     // code_size
 	};
 
 	struct evmc_host_context* context = (struct evmc_host_context*)context_index;
@@ -109,6 +111,7 @@ const (
 	Shanghai             Revision = C.EVMC_SHANGHAI
 	Cancun               Revision = C.EVMC_CANCUN
 	Prague               Revision = C.EVMC_PRAGUE
+	Osaka                Revision = C.EVMC_OSAKA
 	MaxRevision          Revision = C.EVMC_MAX_REVISION
 	LatestStableRevision Revision = C.EVMC_LATEST_STABLE_REVISION
 )
@@ -195,10 +198,16 @@ func (vm *VM) SetOption(name string, value string) (err error) {
 	return err
 }
 
+type Result struct {
+	Output    []byte
+	GasLeft   int64
+	GasRefund int64
+}
+
 func (vm *VM) Execute(ctx HostContext, rev Revision,
 	kind CallKind, static bool, depth int, gas int64,
 	recipient Address, sender Address, input []byte, value Hash,
-	code []byte) (output []byte, gasLeft int64, err error) {
+	code []byte) (res Result, err error) {
 
 	flags := C.uint32_t(0)
 	if static {
@@ -216,8 +225,9 @@ func (vm *VM) Execute(ctx HostContext, rev Revision,
 		bytesPtr(code), C.size_t(len(code)))
 	removeHostContext(ctxId)
 
-	output = C.GoBytes(unsafe.Pointer(result.output_data), C.int(result.output_size))
-	gasLeft = int64(result.gas_left)
+	res.Output = C.GoBytes(unsafe.Pointer(result.output_data), C.int(result.output_size))
+	res.GasLeft = int64(result.gas_left)
+	res.GasRefund = int64(result.gas_refund)
 	if result.status_code != C.EVMC_SUCCESS {
 		err = Error(result.status_code)
 	}
@@ -226,7 +236,7 @@ func (vm *VM) Execute(ctx HostContext, rev Revision,
 		C.evmc_release_result(&result)
 	}
 
-	return output, gasLeft, err
+	return res, err
 }
 
 var (

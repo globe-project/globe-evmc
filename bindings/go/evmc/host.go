@@ -24,6 +24,7 @@ const (
 	CallCode     CallKind = C.EVMC_CALLCODE
 	Create       CallKind = C.EVMC_CREATE
 	Create2      CallKind = C.EVMC_CREATE2
+	EofCreate    CallKind = C.EVMC_EOFCREATE
 )
 
 type AccessStatus int
@@ -72,15 +73,16 @@ func goByteSlice(data *C.uint8_t, size C.size_t) []byte {
 
 // TxContext contains information about current transaction and block.
 type TxContext struct {
-	GasPrice   Hash
-	Origin     Address
-	Coinbase   Address
-	Number     int64
-	Timestamp  int64
-	GasLimit   int64
-	PrevRandao Hash
-	ChainID    Hash
-	BaseFee    Hash
+	GasPrice    Hash
+	Origin      Address
+	Coinbase    Address
+	Number      int64
+	Timestamp   int64
+	GasLimit    int64
+	PrevRandao  Hash
+	ChainID     Hash
+	BaseFee     Hash
+	BlobBaseFee Hash
 }
 
 type HostContext interface {
@@ -101,6 +103,8 @@ type HostContext interface {
 		createAddr Address, err error)
 	AccessAccount(addr Address) AccessStatus
 	AccessStorage(addr Address, key Hash) AccessStatus
+	GetTransientStorage(addr Address, key Hash) Hash
+	SetTransientStorage(addr Address, key Hash, value Hash)
 }
 
 //export accountExists
@@ -181,6 +185,11 @@ func getTxContext(pCtx unsafe.Pointer) C.struct_evmc_tx_context {
 		evmcBytes32(txContext.PrevRandao),
 		evmcBytes32(txContext.ChainID),
 		evmcBytes32(txContext.BaseFee),
+		evmcBytes32(txContext.BlobBaseFee),
+		nil, // TODO: Add support for blob hashes.
+		0,
+		nil, // TODO: Add support for transaction initcodes.
+		0,
 	}
 }
 
@@ -241,4 +250,16 @@ func accessAccount(pCtx unsafe.Pointer, pAddr *C.evmc_address) C.enum_evmc_acces
 func accessStorage(pCtx unsafe.Pointer, pAddr *C.evmc_address, pKey *C.evmc_bytes32) C.enum_evmc_access_status {
 	ctx := getHostContext(uintptr(pCtx))
 	return C.enum_evmc_access_status(ctx.AccessStorage(goAddress(*pAddr), goHash(*pKey)))
+}
+
+//export getTransientStorage
+func getTransientStorage(pCtx unsafe.Pointer, pAddr *C.struct_evmc_address, pKey *C.evmc_bytes32) C.evmc_bytes32 {
+	ctx := getHostContext(uintptr(pCtx))
+	return evmcBytes32(ctx.GetTransientStorage(goAddress(*pAddr), goHash(*pKey)))
+}
+
+//export setTransientStorage
+func setTransientStorage(pCtx unsafe.Pointer, pAddr *C.evmc_address, pKey *C.evmc_bytes32, pVal *C.evmc_bytes32) {
+	ctx := getHostContext(uintptr(pCtx))
+	ctx.SetTransientStorage(goAddress(*pAddr), goHash(*pKey), goHash(*pVal))
 }

@@ -72,6 +72,14 @@ func (host *testHostContext) AccessStorage(addr Address, key Hash) AccessStatus 
 	return ColdAccess
 }
 
+func (host *testHostContext) GetTransientStorage(addr Address, key Hash) Hash {
+	return Hash{}
+}
+
+func (host *testHostContext) SetTransientStorage(addr Address, key Hash, value Hash) {
+}
+
+
 func TestGetBlockNumberFromTxContext(t *testing.T) {
 	// Yul: mstore(0, number()) return(0, msize())
 	code := []byte("\x43\x60\x00\x52\x59\x60\x00\xf3")
@@ -82,7 +90,9 @@ func TestGetBlockNumberFromTxContext(t *testing.T) {
 	host := &testHostContext{}
 	addr := Address{}
 	h := Hash{}
-	output, gasLeft, err := vm.Execute(host, Byzantium, Call, false, 1, 100, addr, addr, nil, h, code)
+	result, err := vm.Execute(host, Byzantium, Call, false, 1, 100, addr, addr, nil, h, code)
+	output := result.Output
+	gasLeft := result.GasLeft
 
 	if len(output) != 32 {
 		t.Errorf("unexpected output size: %d", len(output))
@@ -90,7 +100,7 @@ func TestGetBlockNumberFromTxContext(t *testing.T) {
 
 	// Should return value 42 (0x2a) as defined in GetTxContext().
 	expectedOutput := []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x2a")
-	if bytes.Compare(output, expectedOutput) != 0 {
+	if !bytes.Equal(output, expectedOutput) {
 		t.Errorf("execution unexpected output: %x", output)
 	}
 	if gasLeft != 94 {
@@ -111,12 +121,14 @@ func TestCall(t *testing.T) {
 	host := &testHostContext{}
 	addr := Address{}
 	h := Hash{}
-	output, gasLeft, err := vm.Execute(host, Byzantium, Call, false, 1, 100, addr, addr, nil, h, code)
+	result, err := vm.Execute(host, Byzantium, Call, false, 1, 100, addr, addr, nil, h, code)
+	output := result.Output
+	gasLeft := result.GasLeft
 
 	if len(output) != 34 {
 		t.Errorf("execution unexpected output length: %d", len(output))
 	}
-	if bytes.Compare(output, []byte("output from testHostContext.Call()")) != 0 {
+	if !bytes.Equal(output, []byte("output from testHostContext.Call()")) {
 		t.Errorf("execution unexpected output: %s", output)
 	}
 	if gasLeft != 89 {

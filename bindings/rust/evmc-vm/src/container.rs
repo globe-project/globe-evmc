@@ -102,6 +102,11 @@ mod tests {
             block_prev_randao: Uint256::default(),
             chain_id: Uint256::default(),
             block_base_fee: Uint256::default(),
+            blob_base_fee: Uint256::default(),
+            blob_hashes: std::ptr::null(),
+            blob_hashes_count: 0,
+            initcodes: std::ptr::null(),
+            initcodes_count: 0,
         }
     }
 
@@ -131,6 +136,8 @@ mod tests {
             value: ::evmc_sys::evmc_uint256be::default(),
             create2_salt: ::evmc_sys::evmc_bytes32::default(),
             code_address: ::evmc_sys::evmc_address::default(),
+            code: std::ptr::null(),
+            code_size: 0,
         };
         let message: ExecutionMessage = (&message).into();
 
@@ -149,6 +156,8 @@ mod tests {
             emit_log: None,
             access_account: None,
             access_storage: None,
+            get_transient_storage: None,
+            set_transient_storage: None,
         };
         let host_context = std::ptr::null_mut();
 
